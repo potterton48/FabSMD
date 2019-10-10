@@ -1,0 +1,40 @@
+
+##	Make sure any symbolic links are resolved to absolute path
+export PBS_O_WORKDIR=$$(readlink -f $$PBS_O_WORKDIR)
+
+##	The base directory is the directory that the job was submitted from.
+##	All simulations are in subdirectories of this directory.
+basedir=$$PBS_O_WORKDIR
+
+
+##	SMD Exec Template: 
+cd $job_results
+
+/usr/bin/env > env.log
+
+
+$run_prefix
+
+cd inputs
+
+##	save the file name into an array (files)
+files=(`ls *.inp | sed -e "s/\.[^.]*$$//"`)
+
+
+##	fill commands to be executed in an array (cmd)
+for ((i=0; i<$${#files[@]}; i++)); do
+	fileName=$${files[$$i]}
+	if [[ "$$i" -eq 0 ]]; then
+		echo "RUN COMMAND -> $run_command namd2 $namd_option $${files[$$i]}.inp > $${files[$$i]}.log"
+		$run_command namd2 $namd_option $${files[$$i]}.inp > $${files[$$i]}.log
+
+		echo "RUN COMMAND -> $run_command vmd -e ../Eqref.tcl -dcd $${files[$$i]}.dcd -parm7 ../Structures/"$config"_complex.prmtop -dispdev text -args $config"
+		$run_command vmd -e ../Eqref.tcl -dcd $${files[$$i]}.dcd -parm7 ../Structures/"$config"_complex.prmtop -dispdev text -args $config
+	else
+		echo "RUN COMMAND -> $run_command namd2 $namd_option $${files[$$i]}.inp > $${files[$$i]}.log"
+		$run_command namd2 $namd_option $${files[$$i]}.inp > $${files[$$i]}.log
+    fi
+done
+
+
+
