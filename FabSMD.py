@@ -26,7 +26,7 @@ def SMD(config, **args):
 
 
 @task
-def SMD_ensemble(config="dummy_test", **args):
+def SMD_ensemble(config="Rimonabant", **args):
     # Submits an ensemble of SMD jobs.
 
     path_to_config = find_config_file_path(config)
